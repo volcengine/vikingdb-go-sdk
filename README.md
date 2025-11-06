@@ -22,130 +22,83 @@ go get github.com/volcengine/vikingdb-go-sdk
 
 ## Quick Start
 
-The following is a quick start guide to using the Volc-VikingDB Golang SDK.
+The quickest path to a working setup is to load configuration from environment variables, just like the runnable guides in `examples/vector/README.md`. This keeps credentials outside of your code and lets you swap contexts by switching shells.
 
-### Client Initialization
+### Configure the Environment
 
-To get started, you need to initialize a client with your credentials and the desired configuration. The SDK supports initialization with an Access Key and Secret Key.
+| Variable                      | Purpose                                           |
+|-------------------------------|---------------------------------------------------|
+| `VIKINGDB_AK` / `VIKINGDB_SK` | IAM access keys used for signing requests.        |
+| `VIKINGDB_HOST`               | Fully qualified API hostname (no scheme).         |
+| `VIKINGDB_REGION`             | Region used for signing and routing.              |
+| `VIKINGDB_COLLECTION`         | Default collection for collection/index APIs.     |
+| `VIKINGDB_INDEX`              | Default index for search-focused examples.        |
+
+Create a `.env` file so you can source these values locally. The sample at `examples/vector/.env` is a convenient starting point.
+
+```bash
+cp examples/vector/.env .env
+# edit .env with your project-specific values
+export $(grep -v '^#' .env | xargs)                 # load once for the current shell
+# or scope the variables to a single command
+env $(grep -v '^#' .env | xargs) go test ./examples/vector -run TestScenario
+```
+
+### Initialize the Client
+
+With the variables in place, construct the SDK client by reading from the process environment:
 
 ```go
+package main
+
 import (
+    "context"
+    "log"
+    "os"
+    "time"
+
     "github.com/volcengine/vikingdb-go-sdk/vector"
     "github.com/volcengine/vikingdb-go-sdk/vector/model"
 )
 
-// Initialize the client with an Access Key and Secret Key
-accessKey := "YOUR_AK"
-secretKey := "YOUR_SK"
-endpoint := "http://YOUR_ENDPOINT" // e.g. http://10.1.2.3:8080
-collectionName := "your_collection_name"
+func main() {
+    client, err := vector.New(
+        vector.AuthIAM(os.Getenv("VIKINGDB_AK"), os.Getenv("VIKINGDB_SK")),
+        vector.WithEndpoint("https://" + os.Getenv("VIKINGDB_HOST")),
+        vector.WithRegion(os.Getenv("VIKINGDB_REGION")),
+        vector.WithTimeout(30*time.Second),
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
 
-collectionConfig := model.DataAPICollectionBase{
-    CollectionName: collectionName,
-}
+    collection := client.Collection(model.CollectionLocator{
+        CollectionName: os.Getenv("VIKINGDB_COLLECTION"),
+    })
+    index := client.Index(model.IndexLocator{
+        CollectionLocator: model.CollectionLocator{
+            CollectionName: os.Getenv("VIKINGDB_COLLECTION"),
+        },
+        IndexName: os.Getenv("VIKINGDB_INDEX"),
+    })
 
-opts := []vector.ClientOption{
-    vector.WithEndpoint(endpoint),
-}
+    limit := 5
+    resp, err := index.SearchByRandom(context.Background(), model.SearchByRandomRequest{
+        SearchBase: model.SearchBase{Limit: &limit},
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
 
-client, err := vector.NewCollectionClientWithAkSk(accessKey, secretKey, collectionConfig, opts...)
-if err != nil {
-    // Handle error
-}
-```
-
-### Specialized Clients
-
-The SDK provides specialized clients for different functional modules, such as `CollectionClient`, `IndexClient`, and `EmbeddingClient`. You can initialize these clients in a similar way.
-
-#### Collection Client
-
-The `CollectionClient` is used to manage and operate on data within a specific collection.
-
-```go
-import (
-    "github.com/volcengine/vikingdb-go-sdk/vector"
-    "github.com/volcengine/vikingdb-go-sdk/vector/model"
-)
-
-accessKey := "YOUR_AK"
-secretKey := "YOUR_SK"
-endpoint := "http://YOUR_ENDPOINT"
-collectionName := "your_collection_name"
-
-collectionConfig := model.DataAPICollectionBase{
-    CollectionName: collectionName,
-}
-
-opts := []vector.ClientOption{
-    vector.WithEndpoint(endpoint),
-}
-
-collectionClient, err := vector.NewCollectionClientWithAkSk(accessKey, secretKey, collectionConfig, opts...)
-if err != nil {
-    // Handle error
+    log.Printf("request_id=%s hits=%d", resp.RequestID, len(resp.Result.Data))
 }
 ```
 
-#### Index Client
-
-The `IndexClient` is used to manage and operate on indexes within a specific collection.
-
-```go
-import (
-    "github.com/volcengine/vikingdb-go-sdk/vector"
-    "github.com/volcengine/vikingdb-go-sdk/vector/model"
-)
-
-accessKey := "YOUR_AK"
-secretKey := "YOUR_SK"
-endpoint := "http://YOUR_ENDPOINT"
-collectionName := "your_collection_name"
-indexName := "your_index_name"
-
-indexConfig := model.DataAPIIndexBase{
-    DataAPICollectionBase: model.DataAPICollectionBase{
-        CollectionName: collectionName,
-    },
-    IndexName:      indexName,
-}
-
-opts := []vector.ClientOption{
-    vector.WithEndpoint(endpoint),
-}
-
-indexClient, err := vector.NewIndexClientWithAkSk(accessKey, secretKey, indexConfig, opts...)
-if err != nil {
-    // Handle error
-}
-```
-
-#### Embedding Client
-
-The `EmbeddingClient` is used to perform text embedding operations.
-
-```go
-import (
-    "github.com/volcengine/vikingdb-go-sdk/vector"
-)
-
-accessKey := "YOUR_AK"
-secretKey := "YOUR_SK"
-endpoint := "http://YOUR_ENDPOINT"
-
-opts := []vector.ClientOption{
-    vector.WithEndpoint(endpoint),
-}
-
-embeddingClient, err := vector.NewEmbeddingClientWithAkSk(accessKey, secretKey, opts...)
-if err != nil {
-    // Handle error
-}
-```
+If you prefer API keys, export `VIKINGDB_API_KEY` and replace the auth option with `vector.AuthAPIKey(os.Getenv("VIKINGDB_API_KEY"))`.
 
 ### Data Operations
 
-The SDK provides a rich set of data manipulation interfaces, including `Upsert`, `Update`, `Delete`, `Fetch`, and `Query`.
+Once the client is configured, you can use the scoped clients (`collection`, `index`, `embedding`) to call into VikingDB. The SDK exposes operations such as `Upsert`, `Update`, `Delete`, `Fetch`, `SearchByVector`, `SearchByMultiModal`, and `SearchByKeywords`.
 
 #### Upsert Data
 
@@ -157,7 +110,7 @@ import (
     "github.com/volcengine/vikingdb-go-sdk/vector/model"
 )
 
-req := &model.UpsertDataRequest{
+req := model.UpsertDataRequest{
     WriteDataBase: model.WriteDataBase{
         Data: []model.MapStr{
             {
@@ -168,16 +121,16 @@ req := &model.UpsertDataRequest{
     },
 }
 
-resp, err := collectionClient.Upsert(context.Background(), req)
+resp, err := collection.Upsert(context.Background(), req)
 if err != nil {
     // Handle error
 }
 // Process response
 ```
 
-#### Vector Retrieval
+#### Vector Search
 
-The `Query` operation is used to perform vector retrieval. (Note: The test files do not contain a `Query` example. The following is a general structure.)
+Use `SearchByVector` to perform vector retrieval by comparing a query vector against indexed vectors.
 
 ```go
 import (
@@ -185,11 +138,16 @@ import (
     "github.com/volcengine/vikingdb-go-sdk/vector/model"
 )
 
-req := &model.QueryDataRequest{
-    // ... specify query parameters
+limit := 5
+req := model.SearchByVectorRequest{
+    SearchBase: model.SearchBase{
+        Limit:        &limit,
+        OutputFields: []string{"title", "score"},
+    },
+    DenseVector: []float64{0.1, 0.5, 0.2, 0.8},
 }
 
-resp, err := collectionClient.Query(context.Background(), req)
+resp, err := index.SearchByVector(context.Background(), req)
 if err != nil {
     // Handle error
 }
@@ -198,7 +156,7 @@ if err != nil {
 
 ### Text Embedding
 
-The `Embedding` operation is used to convert text into vectors.
+The `Embedding` operation is used to convert text into vectors. Assuming the `client` is created as shown in the quick start:
 
 ```go
 import (
@@ -209,7 +167,7 @@ import (
 text := "hello world"
 model_name := "doubao-embedding"
 model_version := "240715"
-req := &model.EmbeddingRequest{
+req := model.EmbeddingRequest{
     DenseModel: &model.EmbeddingModelOpt{
         ModelName: &model_name,
         ModelVersion: &model_version,
@@ -220,6 +178,8 @@ req := &model.EmbeddingRequest{
         },
     },
 }
+
+embeddingClient := client.Embedding()
 
 resp, err := embeddingClient.Embedding(context.Background(), req)
 if err != nil {

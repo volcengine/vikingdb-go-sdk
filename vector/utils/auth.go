@@ -9,13 +9,23 @@ import (
 	"github.com/volcengine/volc-sdk-golang/base"
 )
 
-func SignRequest(req *http.Request, ak string, sk string) *http.Request {
+const (
+	defaultRegion  = "cn-beijing"
+	defaultService = "vikingdb"
+)
+
+// SignRequest keeps backward compatibility with the previous signature and signs using the default region.
+func SignRequest(req *http.Request, ak, sk string) *http.Request {
+	return SignRequestWithRegion(req, ak, sk, defaultRegion)
+}
+
+// SignRequestWithRegion signs the HTTP request with the provided credentials and region.
+func SignRequestWithRegion(req *http.Request, ak, sk, region string) *http.Request {
 	credential := base.Credentials{
 		AccessKeyID:     ak,
 		SecretAccessKey: sk,
-		Service:         "vikingdb",
-		Region:          "cn-north-1",
+		Service:         defaultService,
+		Region:          region,
 	}
-	req = credential.Sign(req)
-	return req
+	return credential.Sign(req)
 }

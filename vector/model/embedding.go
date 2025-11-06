@@ -3,62 +3,48 @@
 
 package model
 
-// EmbeddingModelOpt 表示嵌入模型选项
+// EmbeddingModelOpt describes the model configuration for dense or sparse embeddings.
 type EmbeddingModelOpt struct {
-	// 模型名称
-	ModelName *string `json:"name"`
-
-	// 模型版本
+	ModelName    *string `json:"name"`
 	ModelVersion *string `json:"version,omitempty"`
-
-	// 维度
-	Dim *int `json:"dim,omitempty"`
+	Dim          *int    `json:"dim,omitempty"`
 }
 
-// EmbeddingData 表示嵌入数据
+// FullModalData represents a single multimodal element that can be embedded.
+type FullModalData struct {
+	Text  *string     `json:"text,omitempty"`
+	Image *string     `json:"image,omitempty"`
+	Video interface{} `json:"video,omitempty"`
+}
+
+// EmbeddingData captures the payload to embed, supporting multimodal sequences.
 type EmbeddingData struct {
-	// 文本
-	Text *string `json:"text,omitempty"`
-
-	// 图像
-	Image *string `json:"image,omitempty"`
+	Text         *string         `json:"text,omitempty"`
+	Image        interface{}     `json:"image,omitempty"`
+	Video        interface{}     `json:"video,omitempty"`
+	FullModalSeq []FullModalData `json:"full_modal_seq,omitempty"`
 }
 
-// EmbeddingRequest 表示嵌入请求
+// EmbeddingRequest mirrors the Java SDK request payload.
 type EmbeddingRequest struct {
-	// 项目名称
-	ProjectName *string `json:"project_name,omitempty"`
-
-	// 密集模型
-	DenseModel *EmbeddingModelOpt `json:"dense_model,omitempty"`
-
-	// 稀疏模型
+	ProjectName *string            `json:"project_name,omitempty"`
+	DenseModel  *EmbeddingModelOpt `json:"dense_model,omitempty"`
 	SparseModel *EmbeddingModelOpt `json:"sparse_model,omitempty"`
-
-	// 数据
-	Data []*EmbeddingData `json:"data"`
+	Data        []*EmbeddingData   `json:"data"`
 }
 
-// EmbeddingResponse 表示嵌入响应
 type EmbeddingResponse struct {
-	// 通用响应
 	CommonResponse
-
 	Result *EmbeddingResult `json:"result,omitempty"`
 }
 
 type EmbeddingResult struct {
-	Data []*Embedding `json:"data"`
-
-	// Token使用情况
-	TokenUsage interface{} `json:"token_usage,omitempty"`
+	Data       []*Embedding `json:"data"`
+	TokenUsage interface{}  `json:"token_usage,omitempty"`
 }
 
-// Embedding 表示嵌入结果
+// Embedding contains the generated dense and sparse vectors.
 type Embedding struct {
-	// 密集向量
-	DenseVectors [][]float32 `json:"dense_vectors,omitempty"`
-
-	// 稀疏向量
-	SparseVectors []map[string]float32 `json:"sparse_vectors,omitempty"`
+	DenseVectors  []float32          `json:"dense,omitempty"`
+	SparseVectors map[string]float32 `json:"sparse,omitempty"`
 }

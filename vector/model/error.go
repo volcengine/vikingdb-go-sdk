@@ -8,15 +8,15 @@ import (
 	"net/http"
 )
 
-// ErrorCode 定义错误码
+// ErrorCode represents the service error code string returned by VikingDB.
 type ErrorCode string
 
-// 错误码常量
+// Predefined SDK error codes.
 const (
-	// HTTP 报错
+	// HTTP layer errors.
 	ErrCodeHTTPRequestFailed ErrorCode = "HTTPRequestFailed"
 
-	// 通用错误
+	// Generic errors.
 	ErrCodeUnknown              ErrorCode = "Unknown"
 	ErrCodeInvalidParameter     ErrorCode = "InvalidParameter"
 	ErrCodeServiceUnavailable   ErrorCode = "ServiceUnavailable"
@@ -26,47 +26,47 @@ const (
 	ErrCodeForbidden            ErrorCode = "Forbidden"
 	ErrCodeNotFound             ErrorCode = "NotFound"
 
-	// 集合相关错误
+	// Collection related errors.
 	ErrCodeCollectionNotExists     ErrorCode = "CollectionNotExists"
 	ErrCodeCollectionAlreadyExists ErrorCode = "CollectionAlreadyExists"
 	ErrCodeCollectionCreateFailed  ErrorCode = "CollectionCreateFailed"
 	ErrCodeCollectionUpdateFailed  ErrorCode = "CollectionUpdateFailed"
 	ErrCodeCollectionDeleteFailed  ErrorCode = "CollectionDeleteFailed"
 
-	// 数据相关错误
+	// Data related errors.
 	ErrCodeDataInsertFailed ErrorCode = "DataInsertFailed"
 	ErrCodeDataUpdateFailed ErrorCode = "DataUpdateFailed"
 	ErrCodeDataDeleteFailed ErrorCode = "DataDeleteFailed"
 	ErrCodeDataNotFound     ErrorCode = "DataNotFound"
 
-	// 检索相关错误
+	// Search related errors.
 	ErrCodeSearchFailed   ErrorCode = "SearchFailed"
 	ErrCodeIndexNotExists ErrorCode = "IndexNotExists"
 
-	// 嵌入相关错误
+	// Embedding related errors.
 	ErrCodeEmbeddingFailed ErrorCode = "EmbeddingFailed"
 	ErrCodeModelNotFound   ErrorCode = "ModelNotFound"
 )
 
-// Error 表示 SDK 错误
+// Error wraps a VikingDB failure with HTTP and internal metadata.
 type Error struct {
-	// 错误码
+	// Code is the VikingDB error code string.
 	Code ErrorCode `json:"code"`
 
-	// 错误消息
+	// Message describes the failure.
 	Message string `json:"message"`
 
-	// HTTP 状态码
+	// StatusCode is the HTTP status returned by the service.
 	StatusCode int `json:"status_code,omitempty"`
 
-	// 请求 ID
+	// RequestID echoes the server-side request identifier.
 	RequestID string `json:"request_id,omitempty"`
 
-	// 原始错误
+	// Err contains the underlying error when available.
 	Err error `json:"-"`
 }
 
-// Error 实现 error 接口
+// Error implements the error interface.
 func (e *Error) Error() string {
 	if e.RequestID != "" {
 		return fmt.Sprintf("vikingdb error: code=%s, message=%s, status_code=%d, err=%v, request_id=%s", e.Code, e.Message, e.StatusCode, e.Err, e.RequestID)
@@ -74,12 +74,12 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("vikingdb error: code=%s, message=%s, status_code=%d, err=%v", e.Code, e.Message, e.StatusCode, e.Err)
 }
 
-// Unwrap 返回原始错误
+// Unwrap returns the wrapped error for errors.Is compatibility.
 func (e *Error) Unwrap() error {
 	return e.Err
 }
 
-// NewError 创建一个新的错误
+// NewError constructs an Error with the supplied code and message.
 func NewError(code ErrorCode, message string) *Error {
 	return &Error{
 		Code:       code,
@@ -88,7 +88,7 @@ func NewError(code ErrorCode, message string) *Error {
 	}
 }
 
-// NewErrorWithStatusCode 创建一个带有状态码的新错误
+// NewErrorWithStatusCode builds an Error with an explicit HTTP status code.
 func NewErrorWithStatusCode(code ErrorCode, message string, statusCode int) *Error {
 	return &Error{
 		Code:       code,
@@ -97,7 +97,7 @@ func NewErrorWithStatusCode(code ErrorCode, message string, statusCode int) *Err
 	}
 }
 
-// NewErrorWithRequestID 创建一个带有请求 ID 的新错误
+// NewErrorWithRequestID builds an Error carrying a request identifier.
 func NewErrorWithRequestID(code ErrorCode, message string, requestID string, statusCode int) *Error {
 	return &Error{
 		Code:       code,
@@ -107,7 +107,7 @@ func NewErrorWithRequestID(code ErrorCode, message string, requestID string, sta
 	}
 }
 
-// NewErrorWithCause 创建一个带有原因的新错误
+// NewErrorWithCause builds an Error that wraps a lower-level failure.
 func NewErrorWithCause(code ErrorCode, message string, cause error, statusCode int) *Error {
 	return &Error{
 		Code:       code,
@@ -117,7 +117,7 @@ func NewErrorWithCause(code ErrorCode, message string, cause error, statusCode i
 	}
 }
 
-// IsRetryableError 判断错误是否可重试
+// IsRetryableError reports whether the error should be retried.
 func IsRetryableError(err error) bool {
 	if err == nil {
 		return false
@@ -129,7 +129,8 @@ func IsRetryableError(err error) bool {
 	}
 
 	switch sdkErr.StatusCode {
-	case http.StatusTooManyRequests, http.StatusServiceUnavailable, http.StatusGatewayTimeout:
+	case http.StatusTooManyRequests,
+		http.StatusInternalServerError, http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout:
 		return true
 	}
 
@@ -141,37 +142,37 @@ func IsRetryableError(err error) bool {
 	return false
 }
 
-// NewInvalidParameterError 创建一个参数无效错误
+// NewInvalidParameterError returns a BadRequest error.
 func NewInvalidParameterError(message string) *Error {
 	return NewErrorWithStatusCode(ErrCodeInvalidParameter, message, http.StatusBadRequest)
 }
 
-// NewUnauthorizedError 创建一个未授权错误
+// NewUnauthorizedError returns an Unauthorized error.
 func NewUnauthorizedError(message string) *Error {
 	return NewErrorWithStatusCode(ErrCodeUnauthorized, message, http.StatusUnauthorized)
 }
 
-// NewForbiddenError 创建一个禁止访问错误
+// NewForbiddenError returns a Forbidden error.
 func NewForbiddenError(message string) *Error {
 	return NewErrorWithStatusCode(ErrCodeForbidden, message, http.StatusForbidden)
 }
 
-// NewNotFoundError 创建一个资源不存在错误
+// NewNotFoundError returns a NotFound error.
 func NewNotFoundError(message string) *Error {
 	return NewErrorWithStatusCode(ErrCodeNotFound, message, http.StatusNotFound)
 }
 
-// NewServiceUnavailableError 创建一个服务不可用错误
+// NewServiceUnavailableError returns a ServiceUnavailable error.
 func NewServiceUnavailableError(message string) *Error {
 	return NewErrorWithStatusCode(ErrCodeServiceUnavailable, message, http.StatusServiceUnavailable)
 }
 
-// NewTimeoutError 创建一个超时错误
+// NewTimeoutError returns a GatewayTimeout error.
 func NewTimeoutError(message string) *Error {
 	return NewErrorWithStatusCode(ErrCodeTimeout, message, http.StatusGatewayTimeout)
 }
 
-// NewRequestLimitExceededError 创建一个请求限制超出错误
+// NewRequestLimitExceededError returns a TooManyRequests error.
 func NewRequestLimitExceededError(message string) *Error {
 	return NewErrorWithStatusCode(ErrCodeRequestLimitExceeded, message, http.StatusTooManyRequests)
 }

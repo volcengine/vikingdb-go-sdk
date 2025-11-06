@@ -4,84 +4,59 @@
 package utils
 
 import (
-	"math"
 	"math/rand"
 	"time"
 
 	"github.com/volcengine/vikingdb-go-sdk/vector/model"
 )
 
-// Retry 重试函数
+const (
+	defaultInitialBackoff = 100 * time.Millisecond
+	defaultMaxBackoff     = 10 * time.Second
+	backoffMultiplier     = 2.0
+)
+
+// Retry executes fn with exponential backoff. Retries stop when fn returns nil, the max retry count is reached,
+// or shouldRetry returns false for the latest error.
 func Retry(maxRetries int, fn func() error, shouldRetry func(error) bool) error {
-	var err error
+	if maxRetries < 0 {
+		maxRetries = 0
+	}
+	var lastErr error
+	delay := defaultInitialBackoff
 
-	// 初始化随机数生成器
-	rand.Seed(time.Now().UnixNano())
-
-	// 尝试执行函数
-	for i := 0; i <= maxRetries; i++ {
-		// 执行函数
-		err = fn()
-
-		// 如果没有错误或者不应该重试，直接返回
-		if err == nil || (i == maxRetries) || (shouldRetry != nil && !shouldRetry(err)) {
-			return err
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		if attempt > 0 {
+			jitter := time.Duration(rand.Int63n(int64(delay)))
+			sleepFor := delay + jitter
+			if sleepFor > defaultMaxBackoff {
+				sleepFor = defaultMaxBackoff
+			}
+			time.Sleep(sleepFor)
+			next := time.Duration(float64(delay) * backoffMultiplier)
+			if next > defaultMaxBackoff {
+				next = defaultMaxBackoff
+			}
+			delay = next
 		}
 
-		// 计算退避时间
-		backoffTime := calculateBackoffTime(i)
-
-		// 等待退避时间
-		time.Sleep(backoffTime)
+		if err := fn(); err != nil {
+			lastErr = err
+			if shouldRetry != nil && !shouldRetry(err) {
+				return err
+			}
+			if attempt == maxRetries {
+				return err
+			}
+			continue
+		}
+		return nil
 	}
 
-	return err
+	return lastErr
 }
 
-// IsRetryableError 判断错误是否可重试
+// IsRetryableError delegates to model.IsRetryableError for backward compatibility.
 func IsRetryableError(err error) bool {
-	if err == nil {
-		return false
-	}
-
-	// 尝试将错误转换为 SDK 错误
-	sdkErr, ok := err.(*model.Error)
-	if !ok {
-		return false
-	}
-
-	// 根据状态码判断是否可重试
-	switch sdkErr.StatusCode {
-	case 429, 500, 502, 503, 504:
-		return true
-	}
-
-	// 根据错误码判断是否可重试
-	switch sdkErr.Code {
-	case model.ErrCodeServiceUnavailable, model.ErrCodeTimeout, model.ErrCodeRequestLimitExceeded:
-		return true
-	}
-
-	return false
-}
-
-// calculateBackoffTime 计算退避时间
-func calculateBackoffTime(retryCount int) time.Duration {
-	// 基础退避时间（毫秒）
-	baseBackoff := 100
-
-	// 计算退避时间
-	backoff := baseBackoff * int(math.Pow(2, float64(retryCount)))
-
-	// 添加随机抖动
-	jitter := rand.Intn(backoff / 2)
-	backoff = backoff + jitter
-
-	// 最大退避时间（10 秒）
-	maxBackoff := 10000
-	if backoff > maxBackoff {
-		backoff = maxBackoff
-	}
-
-	return time.Duration(backoff) * time.Millisecond
+	return model.IsRetryableError(err)
 }

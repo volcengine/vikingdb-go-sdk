@@ -3,74 +3,44 @@
 
 package model
 
-// CommonResponse 表示通用响应结构
+// CommonResponse represents the shared response envelope returned by VikingDB APIs.
 type CommonResponse struct {
-	// API名称
-	API string `json:"api,omitempty"`
-
-	// 消息
-	Message string `json:"message,omitempty"`
-
-	// code
-	Code string `json:"string,omitempty"`
-
-	// log ID
+	API       string `json:"api,omitempty"`
+	Message   string `json:"message,omitempty"`
+	Code      string `json:"code,omitempty"`
 	RequestID string `json:"request_id,omitempty"`
 }
 
-// DataAPICollectionBase 表示数据API集合基础请求
-type DataAPICollectionBase struct {
-	// 集合名称
+// CollectionLocator carries general collection level identifiers.
+type CollectionLocator struct {
 	CollectionName string `json:"collection_name"`
-
-	// 项目名称
-	ProjectName string `json:"project_name"`
-
-	// 资源ID
-	ResourceID string `json:"resource_id"`
+	ProjectName    string `json:"project_name,omitempty"`
+	ResourceID     string `json:"resource_id"`
 }
 
-// DataAPIIndexBase 表示数据API索引基础请求
-type DataAPIIndexBase struct {
-	// 集合基础请求
-	DataAPICollectionBase
-
-	// 索引名称
+// IndexLocator extends collection metadata with the index name.
+type IndexLocator struct {
+	CollectionLocator
 	IndexName string `json:"index_name"`
 }
 
-// Refer 表示引用信息
 type Refer struct {
-	// 账户ID
-	AccountID string `json:"account_id"`
-
-	// 实例编号
+	AccountID  string `json:"account_id"`
 	InstanceNO string `json:"instance_no"`
-
-	// 资源ID
 	ResourceID string `json:"resource_id"`
 }
 
-// MapStr 表示字符串映射
 type MapStr map[string]interface{}
 
-// PaginationRequest 表示分页请求
+// PaginationRequest represents pagination inputs.
 type PaginationRequest struct {
-	// 页码
-	Page int `json:"page,omitempty"`
-
-	// 每页大小
+	Page     int `json:"page,omitempty"`
 	PageSize int `json:"page_size,omitempty"`
 }
 
-// PaginationResponse 表示分页响应
+// PaginationResponse represents pagination metadata.
 type PaginationResponse struct {
-	// 总数
-	Total int `json:"total"`
-
-	// 页码
-	Page int `json:"page"`
-
-	// 每页大小
+	Total    int `json:"total"`
+	Page     int `json:"page"`
 	PageSize int `json:"page_size"`
 }

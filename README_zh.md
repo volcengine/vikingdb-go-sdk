@@ -22,130 +22,83 @@ go get github.com/volcengine/vikingdb-go-sdk
 
 ## 快速入门
 
-以下是使用 Volc-VikingDB Golang SDK 的快速入门指南。
+最直接的方式是像 `examples/vector/README.md` 中的示例一样，通过环境变量加载配置。这样可以把密钥与代码分离，并且可以随时切换不同的凭据。
 
-### 客户端初始化
+### 配置环境变量
 
-首先，您需要使用您的凭据和所需的配置来初始化客户端。SDK 支持使用 Access Key 和 Secret Key 进行初始化。
+| 变量                            | 说明                                       |
+|---------------------------------|--------------------------------------------|
+| `VIKINGDB_AK` / `VIKINGDB_SK`   | 用于请求签名的 IAM Access Key/Secret Key。  |
+| `VIKINGDB_HOST`                 | 完整的 API 域名（不含协议前缀）。           |
+| `VIKINGDB_REGION`               | 用于签名与路由的地域。                     |
+| `VIKINGDB_COLLECTION`           | 集合与索引客户端默认使用的集合名称。       |
+| `VIKINGDB_INDEX`                | 搜索示例默认使用的索引名称。               |
+
+建议在项目根目录准备一个 `.env` 文件，便于本地加载。`examples/vector/.env` 提供了一个可直接复制的模板。
+
+```bash
+cp examples/vector/.env .env
+# 根据实际情况修改 .env 中的配置
+export $(grep -v '^#' .env | xargs)                 # 加载到当前 shell
+# 或者仅在单条命令中注入变量
+env $(grep -v '^#' .env | xargs) go test ./examples/vector -run TestScenario
+```
+
+### 初始化客户端
+
+环境变量准备好后，可以在代码中从进程环境读取配置并初始化 SDK：
 
 ```go
+package main
+
 import (
+    "context"
+    "log"
+    "os"
+    "time"
+
     "github.com/volcengine/vikingdb-go-sdk/vector"
     "github.com/volcengine/vikingdb-go-sdk/vector/model"
 )
 
-// 使用 Access Key 和 Secret Key 初始化客户端
-accessKey := "YOUR_AK"
-secretKey := "YOUR_SK"
-endpoint := "http://YOUR_ENDPOINT" // 例如 http://10.1.2.3:8080
-collectionName := "your_collection_name"
+func main() {
+    client, err := vector.New(
+        vector.AuthIAM(os.Getenv("VIKINGDB_AK"), os.Getenv("VIKINGDB_SK")),
+        vector.WithEndpoint("https://" + os.Getenv("VIKINGDB_HOST")),
+        vector.WithRegion(os.Getenv("VIKINGDB_REGION")),
+        vector.WithTimeout(30*time.Second),
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
 
-collectionConfig := model.DataAPICollectionBase{
-    CollectionName: collectionName,
-}
+    collection := client.Collection(model.CollectionLocator{
+        CollectionName: os.Getenv("VIKINGDB_COLLECTION"),
+    })
+    index := client.Index(model.IndexLocator{
+        CollectionLocator: model.CollectionLocator{
+            CollectionName: os.Getenv("VIKINGDB_COLLECTION"),
+        },
+        IndexName: os.Getenv("VIKINGDB_INDEX"),
+    })
 
-opts := []vector.ClientOption{
-    vector.WithEndpoint(endpoint),
-}
+    limit := 5
+    resp, err := index.SearchByRandom(context.Background(), model.SearchByRandomRequest{
+        SearchBase: model.SearchBase{Limit: &limit},
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
 
-client, err := vector.NewCollectionClientWithAkSk(accessKey, secretKey, collectionConfig, opts...)
-if err != nil {
-    // 处理错误
-}
-```
-
-### 专用客户端
-
-SDK 为不同的功能模块（如 `CollectionClient`、`IndexClient` 和 `EmbeddingClient`）提供专用客户端。您可以以类似的方式初始化这些客户端。
-
-#### 集合客户端
-
-`CollectionClient` 用于管理和操作特定集合中的数据。
-
-```go
-import (
-    "github.com/volcengine/vikingdb-go-sdk/vector"
-    "github.com/volcengine/vikingdb-go-sdk/vector/model"
-)
-
-accessKey := "YOUR_AK"
-secretKey := "YOUR_SK"
-endpoint := "http://YOUR_ENDPOINT"
-collectionName := "your_collection_name"
-
-collectionConfig := model.DataAPICollectionBase{
-    CollectionName: collectionName,
-}
-
-opts := []vector.ClientOption{
-    vector.WithEndpoint(endpoint),
-}
-
-collectionClient, err := vector.NewCollectionClientWithAkSk(accessKey, secretKey, collectionConfig, opts...)
-if err != nil {
-    // 处理错误
+    log.Printf("request_id=%s hits=%d", resp.RequestID, len(resp.Result.Data))
 }
 ```
 
-#### 索引客户端
-
-`IndexClient` 用于管理和操作特定集合中的索引。
-
-```go
-import (
-    "github.com/volcengine/vikingdb-go-sdk/vector"
-    "github.com/volcengine/vikingdb-go-sdk/vector/model"
-)
-
-accessKey := "YOUR_AK"
-secretKey := "YOUR_SK"
-endpoint := "http://YOUR_ENDPOINT"
-collectionName := "your_collection_name"
-indexName := "your_index_name"
-
-indexConfig := model.DataAPIIndexBase{
-    DataAPICollectionBase: model.DataAPICollectionBase{
-        CollectionName: collectionName,
-    },
-    IndexName:      indexName,
-}
-
-opts := []vector.ClientOption{
-    vector.WithEndpoint(endpoint),
-}
-
-indexClient, err := vector.NewIndexClientWithAkSk(accessKey, secretKey, indexConfig, opts...)
-if err != nil {
-    // 处理错误
-}
-```
-
-#### 嵌入客户端
-
-`EmbeddingClient` 用于执行文本嵌入操作。
-
-```go
-import (
-    "github.com/volcengine/vikingdb-go-sdk/vector"
-)
-
-accessKey := "YOUR_AK"
-secretKey := "YOUR_SK"
-endpoint := "http://YOUR_ENDPOINT"
-
-opts := []vector.ClientOption{
-    vector.WithEndpoint(endpoint),
-}
-
-embeddingClient, err := vector.NewEmbeddingClientWithAkSk(accessKey, secretKey, opts...)
-if err != nil {
-    // 处理错误
-}
-```
+如果需要使用 API Key，可以导出 `VIKINGDB_API_KEY` 并将认证选项替换为 `vector.AuthAPIKey(os.Getenv("VIKINGDB_API_KEY"))`。
 
 ### 数据操作
 
-SDK 提供了丰富的数据操作接口，包括 `Upsert`、`Update`、`Delete`、`Fetch` 和 `Query`。
+完成初始化后，就可以使用对应的客户端（`collection`、`index`、`embedding`）调用 VikingDB 的各类接口，例如 `Upsert`、`Update`、`Delete`、`Fetch`、`SearchByVector`、`SearchByMultiModal` 和 `SearchByKeywords`。
 
 #### Upsert 数据
 
@@ -157,7 +110,7 @@ import (
     "github.com/volcengine/vikingdb-go-sdk/vector/model"
 )
 
-req := &model.UpsertDataRequest{
+req := model.UpsertDataRequest{
     WriteDataBase: model.WriteDataBase{
         Data: []model.MapStr{
             {
@@ -168,7 +121,7 @@ req := &model.UpsertDataRequest{
     },
 }
 
-resp, err := collectionClient.Upsert(context.Background(), req)
+resp, err := collection.Upsert(context.Background(), req)
 if err != nil {
     // 处理错误
 }
@@ -177,7 +130,7 @@ if err != nil {
 
 #### 向量检索
 
-`Query` 操作用于执行向量检索。（注意：测试文件中不包含 `Query` 示例。以下为通用结构。）
+使用 `SearchByVector` 可以将查询向量与索引中的向量进行对比，实现向量检索。
 
 ```go
 import (
@@ -185,11 +138,16 @@ import (
     "github.com/volcengine/vikingdb-go-sdk/vector/model"
 )
 
-req := &model.QueryDataRequest{
-    // ... 指定查询参数
+limit := 5
+req := model.SearchByVectorRequest{
+    SearchBase: model.SearchBase{
+        Limit:        &limit,
+        OutputFields: []string{"title", "score"},
+    },
+    DenseVector: []float64{0.1, 0.5, 0.2, 0.8},
 }
 
-resp, err := collectionClient.Query(context.Background(), req)
+resp, err := index.SearchByVector(context.Background(), req)
 if err != nil {
     // 处理错误
 }
@@ -198,7 +156,7 @@ if err != nil {
 
 ### 文本嵌入
 
-`Embedding` 操作用于将文本转换为向量。
+`Embedding` 操作用于将文本转换为向量。以下示例假设已经按前文构建了 `client`：
 
 ```go
 import (
@@ -209,7 +167,7 @@ import (
 text := "hello world"
 model_name := "doubao-embedding"
 model_version := "240715"
-req := &model.EmbeddingRequest{
+req := model.EmbeddingRequest{
     DenseModel: &model.EmbeddingModelOpt{
         ModelName: &model_name,
         ModelVersion: &model_version,
@@ -220,6 +178,8 @@ req := &model.EmbeddingRequest{
         },
     },
 }
+
+embeddingClient := client.Embedding()
 
 resp, err := embeddingClient.Embedding(context.Background(), req)
 if err != nil {

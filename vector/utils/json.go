@@ -6,31 +6,20 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"errors"
 )
 
-func ParseJsonUseNumber2(input []byte, target interface{}) error {
-	var d *json.Decoder
-	var err error
-	d = json.NewDecoder(bytes.NewBuffer(input))
-	if d == nil {
-		return fmt.Errorf("ParseJsonUseNumber init NewDecoder failed")
+// ParseJSONUseNumber decodes input into target while preserving numeric precision via json.Number.
+func ParseJSONUseNumber(input []byte, target interface{}) error {
+	if target == nil {
+		return errors.New("ParseJSONUseNumber: target must not be nil")
 	}
-	d.UseNumber()
-	err = d.Decode(&target)
-	if err != nil {
-		return fmt.Errorf("ParseJsonUseNumber Decode failed %v", err)
-	}
-	return nil
+	decoder := json.NewDecoder(bytes.NewReader(input))
+	decoder.UseNumber()
+	return decoder.Decode(target)
 }
 
-func SerilizeToJsonBytesUseNumber(source interface{}) ([]byte, error) {
-	//  buffer := make([]byte, 0)
-	buf := new(bytes.Buffer)
-	encoder := json.NewEncoder(buf)
-	err := encoder.Encode(source)
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+// SerializeToJSON marshals the provided value into JSON bytes.
+func SerializeToJSON(source interface{}) ([]byte, error) {
+	return json.Marshal(source)
 }
