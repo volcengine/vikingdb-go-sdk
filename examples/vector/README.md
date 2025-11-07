@@ -55,7 +55,7 @@ Once this quickstart works, explore the richer scenarios below.
 # prepare .env file and run with asserts
 go test ./examples/vector -run TestScenario
 # run more readable snippets
-env $(grep -v '^#' ./examples/vector/.env | xargs) go test ./examples/vector -run TestSnippet
+env $(grep -v '^#' ./examples/vector/.env | xargs) go test ./examples/vector -run 
 ```
 
 | Variable                        | Purpose                                           |
