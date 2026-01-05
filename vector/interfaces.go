@@ -42,3 +42,8 @@ type IndexClient interface {
 type EmbeddingClient interface {
 	Embedding(ctx context.Context, request model.EmbeddingRequest, opts ...RequestOption) (*model.EmbeddingResponse, error)
 }
+
+// RerankClient provides embedding operations.
+type RerankClient interface {
+	Rerank(ctx context.Context, request model.RerankRequest, opts ...RequestOption) (*model.RerankResponse, error)
+}

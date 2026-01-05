@@ -209,6 +209,14 @@ func (c *Client) Embedding() EmbeddingClient {
 	return &embeddingClient{client: c.transport}
 }
 
+// Rerank exposes rerank operations.
+func (c *Client) Rerank() RerankClient {
+	if c == nil || c.transport == nil {
+		return nil
+	}
+	return &rerankClient{client: c.transport}
+}
+
 func (c *transport) doRequest(ctx context.Context, method, path string, request, response interface{}, opts ...RequestOption) error {
 	if ctx == nil {
 		ctx = context.Background()
