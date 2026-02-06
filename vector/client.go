@@ -22,6 +22,7 @@ const (
 	authKindNone authKind = iota
 	authKindIAM
 	authKindAPIKey
+	authKindHeader
 )
 
 // Auth describes how the SDK should sign outgoing requests.
@@ -30,6 +31,7 @@ type Auth struct {
 	accessKey string
 	secretKey string
 	apiKey    string
+	headers   map[string]string
 }
 
 // AuthNone disables request signing.
@@ -54,6 +56,14 @@ func AuthAPIKey(apiKey string) Auth {
 	}
 }
 
+// AuthHeader configures header-based authentication.
+func AuthHeader(headers map[string]string) Auth {
+	return Auth{
+		kind:    authKindHeader,
+		headers: headers,
+	}
+}
+
 type authenticator interface {
 	apply(req *http.Request) (*http.Request, error)
 }
@@ -73,6 +83,17 @@ func (a apiKeyAuth) apply(req *http.Request) (*http.Request, error) {
 		return req, nil
 	}
 	req.Header.Set("Authorization", "Bearer "+a.token)
+	return req, nil
+}
+
+type headerAuth struct {
+	headers map[string]string
+}
+
+func (a headerAuth) apply(req *http.Request) (*http.Request, error) {
+	for k, v := range a.headers {
+		req.Header.Set(k, v)
+	}
 	return req, nil
 }
 
@@ -142,8 +163,15 @@ func newTransport(cfg Config, authConfig Auth) (*transport, error) {
 			return nil, model.NewInvalidParameterError("api key cannot be empty")
 		}
 		auth = apiKeyAuth{token: authConfig.apiKey}
+	case authKindHeader:
+		if len(authConfig.headers) == 0 {
+			return nil, model.NewInvalidParameterError("headers cannot be empty")
+		}
+		auth = headerAuth{headers: authConfig.headers}
+	case authKindNone:
+		auth = noAuth{}
 	default:
-		return nil, model.NewInvalidParameterError("no auth")
+		return nil, model.NewInvalidParameterError("unsupported auth kind")
 	}
 
 	if cfg.MaxRetries < 0 {
