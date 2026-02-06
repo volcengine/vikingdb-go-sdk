@@ -550,6 +550,7 @@ func currentParagraphSeed() int64 {
 type guideEnv struct {
 	AccessKey  string
 	SecretKey  string
+	Scheme     string
 	Host       string
 	Region     string
 	Collection string
@@ -568,6 +569,7 @@ func requireEnv(t *testing.T) guideEnv {
 	env := guideEnv{
 		AccessKey:  os.Getenv("VIKINGDB_AK"),
 		SecretKey:  os.Getenv("VIKINGDB_SK"),
+		Scheme:     os.Getenv("VIKINGDB_SCHEME"),
 		Host:       os.Getenv("VIKINGDB_HOST"),
 		Region:     os.Getenv("VIKINGDB_REGION"),
 		Collection: os.Getenv("VIKINGDB_COLLECTION"),
@@ -575,14 +577,19 @@ func requireEnv(t *testing.T) guideEnv {
 	}
 
 	missing := []string{}
-	if env.AccessKey == "" {
-		missing = append(missing, "VIKINGDB_AK")
-	}
-	if env.SecretKey == "" {
-		missing = append(missing, "VIKINGDB_SK")
+	if os.Getenv("VIKINGDB_AUTH") != "header_auth" {
+		if env.AccessKey == "" {
+			missing = append(missing, "VIKINGDB_AK")
+		}
+		if env.SecretKey == "" {
+			missing = append(missing, "VIKINGDB_SK")
+		}
 	}
 	if env.Host == "" {
 		missing = append(missing, "VIKINGDB_HOST")
+	}
+	if env.Scheme == "" {
+		env.Scheme = "https"
 	}
 	if env.Region == "" {
 		missing = append(missing, "VIKINGDB_REGION")
@@ -603,9 +610,19 @@ func requireEnv(t *testing.T) guideEnv {
 
 func mustNewClient(t *testing.T, env guideEnv) *vector.Client {
 	t.Helper()
-
+	var auth vector.Auth
+	if env.AccessKey == "" || env.SecretKey == "" {
+		headers := map[string]string{
+			"X-Top-Account-Id": os.Getenv("VIKINGDB_HTTP_HEADER_ACCOUNT_ID"),
+			"X-Top-User-Id":    os.Getenv("VIKINGDB_HTTP_HEADER_USER_ID"),
+			"X-Top-Role-Id":    "data",
+		}
+		auth = vector.AuthHeader(headers)
+	} else {
+		auth = vector.AuthIAM(env.AccessKey, env.SecretKey)
+	}
 	client, err := vector.New(
-		vector.AuthIAM(env.AccessKey, env.SecretKey),
+		auth,
 		sharedClientOptions(env)...,
 	)
 	require.NoError(t, err)
@@ -614,8 +631,9 @@ func mustNewClient(t *testing.T, env guideEnv) *vector.Client {
 
 func sharedClientOptions(env guideEnv) []vector.ClientOption {
 	// all has default values
+	scheme := env.Scheme
 	return []vector.ClientOption{
-		vector.WithEndpoint(fmt.Sprintf("https://%s", env.Host)),
+		vector.WithEndpoint(fmt.Sprintf("%s://%s", scheme, env.Host)),
 		vector.WithRegion(env.Region),
 		vector.WithMaxRetries(3),
 		vector.WithTimeout(30 * time.Second),
