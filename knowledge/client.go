@@ -259,19 +259,15 @@ func (c *Client) Collection(meta kmodel.CollectionMeta) *CollectionClient {
 }
 
 // Rerank performs rerank service call.
-func (c *Client) Rerank(ctx context.Context, items []kmodel.RerankDataItem, opts ...RequestOption) (*kmodel.RerankResponse, error) {
-	if len(items) == 0 {
+func (c *Client) Rerank(ctx context.Context, request kmodel.RerankRequest, opts ...RequestOption) (*kmodel.RerankResponse, error) {
+	if len(request.Datas) == 0 {
 		return nil, fmt.Errorf("datas list is empty")
 	}
-	if len(items) > 50 {
+	if len(request.Datas) > 50 {
 		return nil, fmt.Errorf("datas list too large")
 	}
-	payload := map[string]interface{}{
-		"datas":        items,
-		"rerank_model": "Doubao-pro-4k-rerank",
-	}
 	var response kmodel.RerankResponse
-	if err := c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/service/rerank", payload, &response, opts...); err != nil {
+	if err := c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/service/rerank", request, &response, opts...); err != nil {
 		return nil, err
 	}
 	return &response, nil

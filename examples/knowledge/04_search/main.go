@@ -242,7 +242,12 @@ func runRerankOps() error {
 		{Query: query, Content: "Revenue grew 12% YoY to $3.4B.", Title: strPtr("Revenue")},
 		{Query: query, Content: "Operating margin improved by 1.5pp to 17%.", Title: strPtr("Margin")},
 	}
-	resp, err := client.Rerank(context.Background(), datas)
+	request := kmodel.RerankRequest{
+		Datas:       datas,
+		RerankModel: strPtr("Doubao-pro-4k-rerank"),
+	}
+
+	resp, err := client.Rerank(context.Background(), request)
 	if err != nil {
 		fmt.Println("rerank_error:", err)
 		return nil
