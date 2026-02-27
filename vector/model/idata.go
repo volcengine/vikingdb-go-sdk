@@ -12,8 +12,9 @@ type FetchDataInIndexRequest struct {
 
 type IndexDataItem struct {
 	DataItem
-	DenseDim    int       `json:"dense_dim,omitempty"`
-	DenseVector []float32 `json:"dense_vector,omitempty"`
+	DenseDim     int                `json:"dense_dim,omitempty"`
+	DenseVector  []float32          `json:"dense_vector,omitempty"`
+	SparseVector map[string]float32 `json:"sparse_vector,omitempty"`
 }
 
 // FetchDataInIndexResponse mirrors DataApiResponse<FetchDataInIndexResult>.
