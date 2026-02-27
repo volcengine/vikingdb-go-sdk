@@ -116,9 +116,13 @@ type SearchByScalarRequest struct {
 // SearchByKeywordsRequest matches documents by keywords.
 type SearchByKeywordsRequest struct {
 	SearchBase
+	Mode          string   `json:"mode,omitempty"`
 	Keywords      []string `json:"keywords,omitempty"`
 	Query         string   `json:"query,omitempty"`
 	CaseSensitive bool     `json:"case_sensitive,omitempty"`
+	Fields        []string `json:"fields,omitempty"`
+	BM25K1        *float64 `json:"bm25_k1,omitempty"`
+	BM25B         *float64 `json:"bm25_b,omitempty"`
 }
 
 // SearchByRandomRequest randomly samples documents.
