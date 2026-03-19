@@ -47,12 +47,12 @@ func runSearchCollection() error {
 	req := kmodel.SearchCollectionRequest{
 		Query:           "2025 Q1 revenue growth",
 		Limit:           10,
-		DenseWeight:     0.5,
-		RerankSwitch:    false,
+		DenseWeight:     floatPtr(0.5),
+		RerankSwitch:    boolPtr(false),
 		RetrieveCount:   intPtr(25),
 		EndpointID:      nil,
 		RerankModel:     strPtr("Doubao-pro-4k-rerank"),
-		RerankOnlyChunk: false,
+		RerankOnlyChunk: boolPtr(false),
 	}
 	res, err := kc.SearchCollection(context.Background(), req)
 	if err != nil {
@@ -75,8 +75,8 @@ func runSearchKnowledge() (*kmodel.SearchKnowledgeResponse, error) {
 		PreProcessing:  nil,
 		PostProcessing: nil,
 		QueryParam:     nil,
-		Limit:          10,
-		DenseWeight:    0.5,
+		Limit:          intPtr(10),
+		DenseWeight:    floatPtr(0.5),
 	}
 	res, err := kc.SearchKnowledge(context.Background(), req)
 	if err != nil {
@@ -239,8 +239,8 @@ func runRerankOps() error {
 	}
 	query := "2025 Q1 revenue growth"
 	datas := []kmodel.RerankDataItem{
-		{Query: query, Content: "Revenue grew 12% YoY to $3.4B.", Title: strPtr("Revenue")},
-		{Query: query, Content: "Operating margin improved by 1.5pp to 17%.", Title: strPtr("Margin")},
+		{Query: query, Content: strPtr("Revenue grew 12% YoY to $3.4B."), Title: strPtr("Revenue")},
+		{Query: query, Content: strPtr("Operating margin improved by 1.5pp to 17%."), Title: strPtr("Margin")},
 	}
 	request := kmodel.RerankRequest{
 		Datas:       datas,

@@ -78,19 +78,21 @@ func runPointCrud() error {
 		Content:    &updatedContent,
 		ChunkTitle: &updatedTitle,
 	}
-	if err := kc.UpdatePoint(context.Background(), pointID, updReq); err != nil {
+	updatePointResp, err := kc.UpdatePoint(context.Background(), pointID, updReq)
+	if err != nil {
 		return err
 	}
-	fmt.Println("update_point_content: ok")
+	fmt.Println("update_point_content:", updatePointResp)
 
 	updFields := []map[string]interface{}{
 		{"field_name": "topic", "field_type": "string", "field_value": "revenue"},
 		{"field_name": "revised", "field_type": "bool", "field_value": true},
 	}
-	if err := kc.UpdatePoint(context.Background(), pointID, kmodel.UpdatePointRequest{Fields: updFields}); err != nil {
+	updateFieldsResp, err := kc.UpdatePoint(context.Background(), pointID, kmodel.UpdatePointRequest{Fields: updFields})
+	if err != nil {
 		return err
 	}
-	fmt.Println("update_point_fields: ok")
+	fmt.Println("update_point_fields:", updateFieldsResp)
 
 	listReq := kmodel.ListPointsRequest{Offset: 0, Limit: 10}
 	getLink := true
@@ -101,10 +103,11 @@ func runPointCrud() error {
 	}
 	fmt.Println("list_points:", listRes)
 
-	if err := kc.DeletePoint(context.Background(), kmodel.DeletePointRequest{PointID: pointID}); err != nil {
+	deleteResp, err := kc.DeletePoint(context.Background(), kmodel.DeletePointRequest{PointID: pointID})
+	if err != nil {
 		return err
 	}
-	fmt.Println("delete_point: ok")
+	fmt.Println("delete_point:", deleteResp)
 
 	return nil
 }

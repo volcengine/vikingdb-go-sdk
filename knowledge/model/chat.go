@@ -22,7 +22,7 @@ type ChatCompletionRequest struct {
 type ChatCompletionResult struct {
 	ReasoningContent *string     `json:"reasoning_content,omitempty"`
 	GeneratedAnswer  *string     `json:"generated_answer,omitempty"`
-	Usage            interface{} `json:"usage,omitempty"`
+	Usage            *string     `json:"usage,omitempty"`
 	Prompt           *string     `json:"prompt,omitempty"`
 	Model            *string     `json:"model,omitempty"`
 	FinishReason     *string     `json:"finish_reason,omitempty"`

@@ -3,11 +3,11 @@
 package model
 
 // CommonResponse represents the shared response envelope returned by Knowledge APIs.
-// Note: code field varies in type across endpoints; exclude it here to avoid decoding issues.
 type CommonResponse struct {
-	API       string `json:"api,omitempty"`
-	Message   string `json:"message,omitempty"`
-	RequestID string `json:"request_id,omitempty"`
+	Code      int32       `json:"code,omitempty"`
+	Message   string      `json:"message,omitempty"`
+	RequestID string      `json:"request_id,omitempty"`
+	Data      interface{} `json:"data,omitempty"`
 }
 
 // CollectionMeta describes knowledge collection locator.
