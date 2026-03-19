@@ -35,11 +35,11 @@ type UpdatePointRequest struct {
 }
 
 type ListPointsRequest struct {
-	Offset            int                    `json:"offset"`
-	Limit             int                    `json:"limit"`
-	DocIDs            map[string]interface{} `json:"doc_ids,omitempty"`
-	PointIDs          map[string]interface{} `json:"point_ids,omitempty"`
-	GetAttachmentLink *bool                  `json:"get_attachment_link,omitempty"`
+	Offset            int      `json:"offset"`
+	Limit             int      `json:"limit"`
+	DocIDs            []string `json:"doc_ids,omitempty"`
+	PointIDs          []string `json:"point_ids,omitempty"`
+	GetAttachmentLink *bool    `json:"get_attachment_link,omitempty"`
 }
 
 type DeletePointRequest struct {

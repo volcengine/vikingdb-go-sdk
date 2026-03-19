@@ -74,18 +74,20 @@ func runDocCrud() error {
 	fmt.Println("get_doc:", info)
 
 	meta = append(meta, kmodel.MetaItem{FieldName: strPtr("updated_at"), FieldType: strPtr("int64"), FieldValue: 1714560000})
-	if err := kc.UpdateDocMeta(context.Background(), docID, meta); err != nil {
+	updateMetaResp, err := kc.UpdateDocMeta(context.Background(), docID, meta)
+	if err != nil {
 		return err
 	}
-	fmt.Println("update_doc_meta: ok")
+	fmt.Println("update_doc_meta:", updateMetaResp)
 
 	time.Sleep(30 * time.Second)
 
 	newName := docName + "-updated"
-	if err := kc.UpdateDoc(context.Background(), docID, newName); err != nil {
+	updateDocResp, err := kc.UpdateDoc(context.Background(), docID, newName)
+	if err != nil {
 		return err
 	}
-	fmt.Println("update_doc: ok")
+	fmt.Println("update_doc:", updateDocResp)
 
 	listReq := kmodel.ListDocsRequest{Offset: 0, Limit: 10, ReturnTokenUsage: boolPtr(true)}
 	listRes, err := kc.ListDocs(context.Background(), listReq)
@@ -95,10 +97,10 @@ func runDocCrud() error {
 	fmt.Println("list_docs:", listRes)
 
 	// Optionally delete:
-	// if err := kc.DeleteDoc(context.Background(), docID); err != nil {
+	// if resp, err := kc.DeleteDoc(context.Background(), docID); err != nil {
 	// 	return err
 	// }
-	// fmt.Println("delete_doc: ok")
+	// fmt.Println("delete_doc:", resp)
 
 	return nil
 }

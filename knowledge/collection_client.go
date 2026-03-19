@@ -83,10 +83,14 @@ func (c *CollectionClient) AddDocV2(ctx context.Context, request kmodel.AddDocV2
 }
 
 // DeleteDoc deletes a document by id.
-func (c *CollectionClient) DeleteDoc(ctx context.Context, docID string, opts ...RequestOption) error {
+func (c *CollectionClient) DeleteDoc(ctx context.Context, docID string, opts ...RequestOption) (*kmodel.CommonResponse, error) {
 	payload := c.metaPayload()
 	payload["doc_id"] = docID
-	return c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/doc/delete", payload, nil, opts...)
+	var resp kmodel.CommonResponse
+	if err := c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/doc/delete", payload, &resp, opts...); err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }
 
 // GetDoc retrieves document info.
@@ -150,19 +154,27 @@ func (c *CollectionClient) ListDocs(ctx context.Context, request kmodel.ListDocs
 }
 
 // UpdateDocMeta updates document metadata.
-func (c *CollectionClient) UpdateDocMeta(ctx context.Context, docID string, meta []kmodel.MetaItem, opts ...RequestOption) error {
+func (c *CollectionClient) UpdateDocMeta(ctx context.Context, docID string, meta []kmodel.MetaItem, opts ...RequestOption) (*kmodel.CommonResponse, error) {
 	payload := c.metaPayload()
 	payload["doc_id"] = docID
 	payload["meta"] = meta
-	return c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/doc/update_meta", payload, nil, opts...)
+	var resp kmodel.CommonResponse
+	if err := c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/doc/update_meta", payload, &resp, opts...); err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }
 
 // UpdateDoc updates document name.
-func (c *CollectionClient) UpdateDoc(ctx context.Context, docID, docName string, opts ...RequestOption) error {
+func (c *CollectionClient) UpdateDoc(ctx context.Context, docID, docName string, opts ...RequestOption) (*kmodel.CommonResponse, error) {
 	payload := c.metaPayload()
 	payload["doc_id"] = docID
 	payload["doc_name"] = docName
-	return c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/doc/update", payload, nil, opts...)
+	var resp kmodel.CommonResponse
+	if err := c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/doc/update", payload, &resp, opts...); err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }
 
 // GetPoint retrieves point info.
@@ -251,7 +263,7 @@ func (c *CollectionClient) AddPoint(ctx context.Context, request kmodel.AddPoint
 }
 
 // UpdatePoint updates an existing point.
-func (c *CollectionClient) UpdatePoint(ctx context.Context, pointID string, update kmodel.UpdatePointRequest, opts ...RequestOption) error {
+func (c *CollectionClient) UpdatePoint(ctx context.Context, pointID string, update kmodel.UpdatePointRequest, opts ...RequestOption) (*kmodel.CommonResponse, error) {
 	payload := c.metaPayload()
 	payload["point_id"] = pointID
 	payload["chunk_title"] = update.ChunkTitle
@@ -260,18 +272,26 @@ func (c *CollectionClient) UpdatePoint(ctx context.Context, pointID string, upda
 	if len(update.Fields) > 0 {
 		payload["fields"] = update.Fields
 	}
-	return c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/point/update", payload, nil, opts...)
+	var resp kmodel.CommonResponse
+	if err := c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/point/update", payload, &resp, opts...); err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }
 
 // DeletePoint deletes a point.
-func (c *CollectionClient) DeletePoint(ctx context.Context, request kmodel.DeletePointRequest, opts ...RequestOption) error {
+func (c *CollectionClient) DeletePoint(ctx context.Context, request kmodel.DeletePointRequest, opts ...RequestOption) (*kmodel.CommonResponse, error) {
 	meta := c.metaPayload()
 	payload := map[string]interface{}{}
 	for k, v := range meta {
 		payload[k] = v
 	}
 	payload["point_id"] = request.PointID
-	return c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/point/delete", payload, nil, opts...)
+	var resp kmodel.CommonResponse
+	if err := c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/point/delete", payload, &resp, opts...); err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }
 
 // SearchCollection performs collection search.

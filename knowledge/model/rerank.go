@@ -4,7 +4,7 @@ package model
 
 type RerankDataItem struct {
 	Query   interface{} `json:"query"`
-	Content string      `json:"content"`
+	Content *string     `json:"content"`
 	Title   *string     `json:"title,omitempty"`
 	Image   interface{} `json:"image,omitempty"` // string or []string
 }
