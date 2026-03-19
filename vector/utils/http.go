@@ -5,10 +5,9 @@ package utils
 
 import (
 	"fmt"
+	"github.com/volcengine/vikingdb-go-sdk/vector/model"
 	"io"
 	"net/http"
-
-	"github.com/volcengine/vikingdb-go-sdk/vector/model"
 )
 
 // DoHTTPRequest executes the HTTP request and wraps transport errors in an SDK error.
@@ -33,8 +32,16 @@ func ParseResponse(resp *http.Response, result interface{}) error {
 			Message   string `json:"message"`
 			RequestID string `json:"request_id"`
 		}
+		var errResp2 struct {
+			Code      int32  `json:"code"`
+			Message   string `json:"message"`
+			RequestID string `json:"request_id"`
+		}
 		if parseErr := ParseJSONUseNumber(body, &errResp); parseErr == nil && (errResp.Code != "" || errResp.Message != "") {
 			return model.NewErrorWithRequestID(model.ErrorCode(errResp.Code), errResp.Message, errResp.RequestID, resp.StatusCode)
+		}
+		if parseErr := ParseJSONUseNumber(body, &errResp2); parseErr == nil && (errResp2.Message != "") {
+			return model.NewErrorWithRequestID(model.ErrorCode(fmt.Sprintf("%d", errResp2.Code)), errResp2.Message, errResp2.RequestID, resp.StatusCode)
 		}
 		return model.NewErrorWithCause(model.ErrCodeUnknown, fmt.Sprintf("unexpected %d response: %s", resp.StatusCode, string(body)), err, resp.StatusCode)
 	}
