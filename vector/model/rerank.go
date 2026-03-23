@@ -4,12 +4,14 @@
 package model
 
 type RerankRequest struct {
+	ProjectName      *string           `json:"project_name,omitempty"`
 	ModelName        string            `json:"model_name"`
 	ModelVersion     string            `json:"model_version"`
 	Data             [][]FullModalData `json:"data"`
 	Query            []FullModalData   `json:"query"`
 	Instruction      *string           `json:"instruction,omitempty"`
 	ReturnOriginData *bool             `json:"return_origin_data,omitempty"`
+	MaxRetryTime     *int              `json:"max_retry_time,omitempty"`
 }
 
 type RerankResponse struct {
