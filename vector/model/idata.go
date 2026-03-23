@@ -42,6 +42,11 @@ type SearchBase struct {
 	Limit        *int           `json:"limit,omitempty"`
 	Offset       *int           `json:"offset,omitempty"`
 	Advance      *SearchAdvance `json:"advance,omitempty"`
+
+	ReturnSchema         *bool `json:"return_schema,omitempty"`
+	ReturnDownloadURL    *bool `json:"return_download_url,omitempty"`
+	ReturnAnalyzedResult *bool `json:"return_analyzed_result,omitempty"`
+	ReturnDetailInfo     *bool `json:"return_detail_info,omitempty"`
 }
 
 // SearchAdvance maps to Java's SearchAdvance DTO.
@@ -67,6 +72,15 @@ type SearchResult struct {
 	TotalReturnCount   int                `json:"total_return_count,omitempty"`
 	RealTextQuery      string             `json:"real_text_query,omitempty"`
 	TokenUsage         MapStr             `json:"token_usage,omitempty"`
+
+	Schema              MapStr  `json:"schema,omitempty"`
+	RerankError         *string `json:"rerank_error,omitempty"`
+	InstForDense        *string `json:"instruction_for_dense,omitempty"`
+	InstForSparse       *string `json:"instruction_for_sparse,omitempty"`
+	InstForTensor       *string `json:"instruction_for_tensor,omitempty"`
+	EmbeddingTimeCostMS *int    `json:"embedding_time_cost_ms,omitempty"`
+	RecallTimeCostMS    *int    `json:"recall_time_cost_ms,omitempty"`
+	RerankTimeCostMS    *int    `json:"rerank_time_cost_ms,omitempty"`
 }
 
 // SearchItemResult represents a single hit within a search response.
@@ -75,6 +89,32 @@ type SearchItemResult struct {
 	Fields   MapStr      `json:"fields,omitempty"`
 	ANNScore float32     `json:"ann_score,omitempty"`
 	Score    float32     `json:"score,omitempty"`
+
+	OriginScore   *float32 `json:"origin_score,omitempty"`
+	AdditionScore *float32 `json:"addition_score,omitempty"`
+}
+
+// TensorRerank defines tensor-based rerank settings.
+type TensorRerank struct {
+	Tensor            *[][]float32 `json:"tensor,omitempty"`
+	InputLimit        *int         `json:"input_limit,omitempty"`
+	MaxSimilarityAlgo *string      `json:"max_similarity_algo,omitempty"`
+}
+
+// ModelRerank defines model-based rerank settings.
+type ModelRerank struct {
+	ModelName      *string  `json:"model_name,omitempty"`
+	ModelVersion   *string  `json:"model_version,omitempty"`
+	Instruction    *string  `json:"instruction,omitempty"`
+	InputLimit     *int     `json:"input_limit,omitempty"`
+	ScoreThreshold *float64 `json:"score_threshold,omitempty"`
+	FailStrategy   *string  `json:"fail_strategy,omitempty"`
+	TimeoutMs      *int     `json:"timeout_ms,omitempty"`
+}
+
+// Instruction configures auto-fill instruction generation.
+type Instruction struct {
+	AutoFill *bool `json:"auto_fill,omitempty"`
 }
 
 // SearchByVectorRequest performs vector similarity search.
@@ -82,15 +122,19 @@ type SearchByVectorRequest struct {
 	SearchBase
 	DenseVector  []float64          `json:"dense_vector"`
 	SparseVector map[string]float64 `json:"sparse_vector,omitempty"`
+	TensorRerank *TensorRerank      `json:"tensor_rerank,omitempty"`
 }
 
 // SearchByMultiModalRequest performs multimodal search.
 type SearchByMultiModalRequest struct {
 	SearchBase
-	Text            *string     `json:"text,omitempty"`
-	Image           interface{} `json:"image,omitempty"`
-	Video           interface{} `json:"video,omitempty"`
-	NeedInstruction *bool       `json:"need_instruction,omitempty"`
+	Text            *string       `json:"text,omitempty"`
+	Image           interface{}   `json:"image,omitempty"`
+	Video           interface{}   `json:"video,omitempty"`
+	NeedInstruction *bool         `json:"need_instruction,omitempty"`
+	Instruction     *Instruction  `json:"instruction,omitempty"`
+	TensorRerank    *TensorRerank `json:"tensor_rerank,omitempty"`
+	ModelRerank     *ModelRerank  `json:"rerank,omitempty"`
 }
 
 // SearchByIDRequest looks up a document by primary key.

@@ -50,6 +50,7 @@ type UpdateDataResult struct {
 type DeleteDataRequest struct {
 	IDs    []interface{} `json:"ids"`
 	DelAll bool          `json:"del_all,omitempty"`
+	Async  bool          `json:"async,omitempty"`
 }
 
 type DeleteDataResponse struct {
@@ -58,7 +59,9 @@ type DeleteDataResponse struct {
 
 // FetchDataInCollectionRequest fetches documents by primary key from a collection.
 type FetchDataInCollectionRequest struct {
-	IDs []interface{} `json:"ids"`
+	IDs                  []interface{} `json:"ids"`
+	ReturnDownloadURL    *bool         `json:"return_download_url,omitempty"`
+	ReturnAnalyzedResult *bool         `json:"return_analyzed_result,omitempty"`
 }
 
 // FetchDataInCollectionResponse returns fetched documents and missing IDs.
