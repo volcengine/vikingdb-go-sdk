@@ -3,11 +3,10 @@
 package knowledge
 
 import (
+	"github.com/volcengine/vikingdb-go-sdk/common"
 	"net/http"
 	"time"
 )
-
-const Version = "0.1.0"
 
 // Config carries shared settings for Knowledge SDK.
 type Config struct {
@@ -26,7 +25,7 @@ func DefaultConfig() Config {
 		Region:     "cn-beijing",
 		Timeout:    30 * time.Second,
 		MaxRetries: 3,
-		UserAgent:  "vikingdb-go-sdk-knowledge/" + Version,
+		UserAgent:  "vikingdb-go-sdk-knowledge/" + common.Version,
 	}
 }
 

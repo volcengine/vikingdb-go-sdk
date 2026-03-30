@@ -7,9 +7,6 @@ import (
 	"time"
 )
 
-// Version denotes the SDK version reported via the User-Agent header.
-const Version = "0.1.0"
-
 // Config carries shared settings for all clients.
 type Config struct {
 	Endpoint   string

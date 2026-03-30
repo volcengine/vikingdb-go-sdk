@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/volcengine/vikingdb-go-sdk/common"
 	"net/http"
 	"net/url"
 
@@ -148,7 +149,7 @@ func newTransport(cfg Config, authConfig Auth) (*transport, error) {
 
 	userAgent := cfg.UserAgent
 	if userAgent == "" {
-		userAgent = fmt.Sprintf("vikingdb-go-sdk/%s", Version)
+		userAgent = fmt.Sprintf("vikingdb-go-sdk/%s", common.Version)
 	}
 
 	var auth authenticator = noAuth{}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"time"
@@ -74,9 +75,15 @@ func runSearchKnowledge() (*kmodel.SearchKnowledgeResponse, error) {
 		ImageQuery:     nil,
 		PreProcessing:  nil,
 		PostProcessing: nil,
-		QueryParam:     nil,
-		Limit:          intPtr(10),
-		DenseWeight:    floatPtr(0.5),
+		QueryParam: map[string]any{
+			"doc_filter": map[string]any{
+				"op":    "must",
+				"field": "quarter",
+				"conds": []string{"Q3"},
+			},
+		},
+		Limit:       intPtr(10),
+		DenseWeight: floatPtr(0.5),
 	}
 	res, err := kc.SearchKnowledge(context.Background(), req)
 	if err != nil {
@@ -84,6 +91,11 @@ func runSearchKnowledge() (*kmodel.SearchKnowledgeResponse, error) {
 		return nil, nil
 	}
 	fmt.Println("search_knowledge:", res)
+
+	for _, item := range res.Data.ResultList {
+		b, _ := json.Marshal(item)
+		fmt.Println(string(b))
+	}
 	return res, nil
 }
 

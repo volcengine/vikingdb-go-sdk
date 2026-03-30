@@ -3,11 +3,10 @@
 package memory
 
 import (
+	"github.com/volcengine/vikingdb-go-sdk/common"
 	"net/http"
 	"time"
 )
-
-const Version = "0.1.0"
 
 type Config struct {
 	Endpoint   string
@@ -24,7 +23,7 @@ func DefaultConfig() Config {
 		Region:     "cn-beijing",
 		Timeout:    30 * time.Second,
 		MaxRetries: 3,
-		UserAgent:  "vikingdb-go-sdk-memory/" + Version,
+		UserAgent:  "vikingdb-go-sdk-memory/" + common.Version,
 	}
 }
 
