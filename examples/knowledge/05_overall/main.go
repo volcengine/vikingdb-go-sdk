@@ -20,20 +20,15 @@ func requireEnv(name string) (string, error) {
 }
 
 func initClient() (*knowledge.Client, error) {
-	ak, err := requireEnv("VOLC_AK")
+	apiKey, err := requireEnv("VIKING_API_KEY")
 	if err != nil {
 		return nil, err
 	}
-	sk, err := requireEnv("VOLC_SK")
-	if err != nil {
-		return nil, err
-	}
-
 	endpoint := "https://api-knowledgebase.mlp.cn-beijing.volces.com"
 	region := "cn-beijing"
 
 	return knowledge.New(
-		knowledge.AuthIAM(ak, sk),
+		knowledge.AuthAPIKey(apiKey),
 		knowledge.WithEndpoint(endpoint),
 		knowledge.WithRegion(region),
 	)
@@ -70,41 +65,6 @@ func addDocV2(ctx context.Context, kc *knowledge.CollectionClient, docID, docNam
 		return nil, err
 	}
 	return resp, nil
-}
-
-func makeMessages(sk *kmodel.SearchKnowledgeResponse, query string) []kmodel.ChatMessage {
-	top := []string{}
-	if sk != nil && sk.Data != nil {
-		for i, item := range sk.Data.ResultList {
-			if i >= 5 {
-				break
-			}
-			title := ""
-			if item.ChunkTitle != nil {
-				title = *item.ChunkTitle
-			}
-			content := ""
-			if item.Content != nil {
-				content = *item.Content
-			}
-			top = append(top, fmt.Sprintf("【%s】\n%s", title, content))
-		}
-	}
-	contextText := "（检索结果为空或不可用）"
-	if len(top) > 0 {
-		contextText = ""
-		for idx, s := range top {
-			if idx > 0 {
-				contextText += "\n\n"
-			}
-			contextText += s
-		}
-	}
-	systemPrompt := "你是一位专业的财报分析师，你需要根据「参考资料」来回答接下来的「用户问题」，这些信息在 <context></context> XML 标签之内。回答必须在参考资料范围内，尽可能简洁，无法回答时请礼貌说明并引导提供更多信息。\n\n<context>\n" + contextText + "\n</context>"
-	return []kmodel.ChatMessage{
-		{Role: "system", Content: systemPrompt},
-		{Role: "user", Content: query},
-	}
 }
 
 func runOverall() error {
@@ -144,36 +104,27 @@ func runOverall() error {
 	}
 
 	query := "your query"
-	limit := 10
-	denseWeight := 0.5
-
-	skReq := kmodel.SearchKnowledgeRequest{
-		Query:       query,
-		Limit:       &limit,
-		DenseWeight: &denseWeight,
-	}
-	skResp, err := kc.SearchKnowledge(ctx, skReq)
+	serviceRID, err := requireEnv("VIKING_SERVICE_RID")
 	if err != nil {
 		return err
 	}
 
-	msgs := makeMessages(skResp, query)
 	stream := false
-	chatReq := kmodel.ChatCompletionRequest{
-		Model:    "Doubao-1-5-pro-32k",
-		Messages: msgs,
-		Stream:   &stream,
+	serviceChatReq := kmodel.ServiceChatRequest{
+		ServiceResourceID: serviceRID,
+		Messages:          []kmodel.ChatMessage{{Role: "user", Content: query}},
+		Stream:            &stream,
 	}
-	chatResp, err := client.ChatCompletion(ctx, chatReq)
+	serviceChatResp, err := client.ServiceChat(ctx, serviceChatReq)
 	if err != nil {
 		return err
 	}
 
-	b, err := json.MarshalIndent(chatResp, "", "  ")
+	b, err := json.MarshalIndent(serviceChatResp, "", "  ")
 	if err != nil {
 		return err
 	}
-	fmt.Println("chat_completion:", string(b))
+	fmt.Println("service_chat:", string(b))
 
 	return nil
 }
