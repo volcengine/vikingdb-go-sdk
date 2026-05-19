@@ -1,0 +1,31 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "2bb42dde9ccd113707514439c8eec72f98e9b7df",
+  "prompts": {
+    "582f64a1bdb0b71e": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a0c5416f66bffd39c172272",
+        "model": "Doubao_1_6__dev"
+      },
+      "human_author": "liubingxia <liubingxia@bytedance.com>",
+      "messages": [],
+      "total_additions": 9,
+      "total_deletions": 0,
+      "accepted_lines": 9,
+      "overriden_lines": 0
+    }
+  },
+  "attestation_metadata": {},
+  "remote_transcripts": {
+    "582f64a1bdb0b71e": {
+      "tool": "trae",
+      "conversation_id": "6a0c5416f66bffd39c172272",
+      "session_id": "6a0c5416f66bffd39c172272",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
