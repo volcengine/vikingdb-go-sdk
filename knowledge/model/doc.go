@@ -10,6 +10,13 @@ type ListDocsRequest struct {
 	ReturnTokenUsage *bool                  `json:"return_token_usage,omitempty"`
 }
 
+type LarkFile struct {
+	URL          *string `json:"url,omitempty"`
+	ObjType      *string `json:"obj_type,omitempty"`
+	ObjToken     *string `json:"obj_token,omitempty"`
+	IncludeChild *bool   `json:"include_child,omitempty"`
+}
+
 type AddDocRequest struct {
 	AddType     string        `json:"add_type"`
 	DocID       *string       `json:"doc_id,omitempty"`
@@ -18,7 +25,7 @@ type AddDocRequest struct {
 	Description *string       `json:"description,omitempty"`
 	TOSPath     *string       `json:"tos_path,omitempty"`
 	URL         *string       `json:"url,omitempty"`
-	LarkFile    *string       `json:"lark_file,omitempty"`
+	LarkFile    *LarkFile     `json:"lark_file,omitempty"`
 	Meta        []MetaItem    `json:"meta,omitempty"`
 	Dedup       *DedupOptions `json:"dedup,omitempty"`
 }
