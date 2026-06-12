@@ -43,13 +43,14 @@ type MetaItem struct {
 }
 
 type AddDocV2Request struct {
-	DocID        *string    `json:"doc_id,omitempty"`
-	DocName      *string    `json:"doc_name,omitempty"`
-	DocType      *string    `json:"doc_type,omitempty"`
-	Description  *string    `json:"description,omitempty"`
-	TagList      []MetaItem `json:"tag_list,omitempty"`
-	URI          *string    `json:"uri,omitempty"`
-	PathSegments []string   `json:"path_segments,omitempty"`
+	DocID              *string    `json:"doc_id,omitempty"`
+	DocName            *string    `json:"doc_name,omitempty"`
+	DocType            *string    `json:"doc_type,omitempty"`
+	Description        *string    `json:"description,omitempty"`
+	TagList            []MetaItem `json:"tag_list,omitempty"`
+	URI                *string    `json:"uri,omitempty"`
+	PathSegments       []string   `json:"path_segments,omitempty"`
+	StrategyResourceID *string    `json:"strategy_resource_id,omitempty"`
 }
 
 type DedupInfo struct {
