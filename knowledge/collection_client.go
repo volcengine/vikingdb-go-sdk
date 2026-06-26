@@ -153,6 +153,57 @@ func (c *CollectionClient) ListDocs(ctx context.Context, request kmodel.ListDocs
 	return &response, nil
 }
 
+// ListDocsV2 lists documents in collection with cursor-based pagination.
+// This SDK surface intentionally omits pipeline_name and only queries the main version.
+func (c *CollectionClient) ListDocsV2(ctx context.Context, request kmodel.ListDocsV2Request, opts ...RequestOption) (*kmodel.ListDocsV2Response, error) {
+	meta := c.metaPayload()
+	payload := map[string]interface{}{}
+	for k, v := range meta {
+		payload[k] = v
+	}
+	reqBytes, err := vectorutils.SerializeToJSON(request)
+	if err != nil {
+		return nil, err
+	}
+	var reqMap map[string]interface{}
+	if err := vectorutils.ParseJSONUseNumber(reqBytes, &reqMap); err != nil {
+		return nil, err
+	}
+	for k, v := range reqMap {
+		payload[k] = v
+	}
+	var response kmodel.ListDocsV2Response
+	if err := c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/doc/v2/list", payload, &response, opts...); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// SearchDocsByFilter searches documents by tag filter on the main version only.
+func (c *CollectionClient) SearchDocsByFilter(ctx context.Context, request kmodel.SearchDocsByFilterRequest, opts ...RequestOption) (*kmodel.SearchDocsByFilterResponse, error) {
+	meta := c.metaPayload()
+	payload := map[string]interface{}{}
+	for k, v := range meta {
+		payload[k] = v
+	}
+	reqBytes, err := vectorutils.SerializeToJSON(request)
+	if err != nil {
+		return nil, err
+	}
+	var reqMap map[string]interface{}
+	if err := vectorutils.ParseJSONUseNumber(reqBytes, &reqMap); err != nil {
+		return nil, err
+	}
+	for k, v := range reqMap {
+		payload[k] = v
+	}
+	var response kmodel.SearchDocsByFilterResponse
+	if err := c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/doc/v2/search_by_filter", payload, &response, opts...); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
 // UpdateDocMeta updates document metadata.
 func (c *CollectionClient) UpdateDocMeta(ctx context.Context, docID string, meta []kmodel.MetaItem, opts ...RequestOption) (*kmodel.CommonResponse, error) {
 	payload := c.metaPayload()

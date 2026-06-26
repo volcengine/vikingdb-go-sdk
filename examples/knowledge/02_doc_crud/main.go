@@ -89,12 +89,42 @@ func runDocCrud() error {
 	}
 	fmt.Println("update_doc:", updateDocResp)
 
-	listReq := kmodel.ListDocsRequest{Offset: 0, Limit: 10, ReturnTokenUsage: boolPtr(true)}
+	listReq := kmodel.ListDocsRequest{
+		Offset: 0,
+		Limit:  10,
+		Filter: &kmodel.ListDocsFilter{
+			DocIDList: []string{docID},
+		},
+		ReturnTokenUsage: boolPtr(true),
+	}
 	listRes, err := kc.ListDocs(context.Background(), listReq)
 	if err != nil {
 		return err
 	}
 	fmt.Println("list_docs:", listRes)
+
+	limit := 2
+	listV2Res, err := kc.ListDocsV2(context.Background(), kmodel.ListDocsV2Request{
+		Limit: &limit,
+	})
+	if err != nil {
+		return err
+	}
+	fmt.Println("list_docs_v2:", listV2Res)
+
+	filterLimit := 10
+	searchByFilterRes, err := kc.SearchDocsByFilter(context.Background(), kmodel.SearchDocsByFilterRequest{
+		Filter: map[string]interface{}{
+			"op":    "must",
+			"field": "category",
+			"conds": []string{"financial_report"},
+		},
+		Limit: &filterLimit,
+	})
+	if err != nil {
+		return err
+	}
+	fmt.Println("search_docs_by_filter:", searchByFilterRes)
 
 	// Optionally delete:
 	// if resp, err := kc.DeleteDoc(context.Background(), docID); err != nil {

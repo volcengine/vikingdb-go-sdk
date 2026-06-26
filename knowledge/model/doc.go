@@ -2,12 +2,26 @@
 // SPDX-License-Identifier: Apache-2.0
 package model
 
+type ListDocsFilter struct {
+	DocIDList []string `json:"doc_id_list,omitempty"`
+}
+
 type ListDocsRequest struct {
-	Offset           int                    `json:"offset"`
-	Limit            int                    `json:"limit"`
-	DocType          *string                `json:"doc_type,omitempty"`
-	Filter           map[string]interface{} `json:"filter,omitempty"`
-	ReturnTokenUsage *bool                  `json:"return_token_usage,omitempty"`
+	Offset           int             `json:"offset"`
+	Limit            int             `json:"limit"`
+	DocType          *string         `json:"doc_type,omitempty"`
+	Filter           *ListDocsFilter `json:"filter,omitempty"`
+	ReturnTokenUsage *bool           `json:"return_token_usage,omitempty"`
+}
+
+type ListDocsV2Request struct {
+	Limit     *int    `json:"limit,omitempty"`
+	NextToken *string `json:"next_token,omitempty"`
+}
+
+type SearchDocsByFilterRequest struct {
+	Filter map[string]interface{} `json:"filter"`
+	Limit  *int                   `json:"limit,omitempty"`
 }
 
 type LarkFile struct {
@@ -111,6 +125,36 @@ type ListDocsResponse struct {
 	Message   string          `json:"message,omitempty"`
 	RequestID string          `json:"request_id,omitempty"`
 	Data      *ListDocsResult `json:"data,omitempty"`
+}
+
+type ListDocsV2Result struct {
+	CollectionName *string   `json:"collection_name,omitempty"`
+	DocList        []DocInfo `json:"doc_list"`
+	Count          *int      `json:"count,omitempty"`
+	TotalNum       *int      `json:"total_num,omitempty"`
+	HasMore        *bool     `json:"has_more,omitempty"`
+	NextToken      *string   `json:"next_token,omitempty"`
+}
+
+type ListDocsV2Response struct {
+	Code      int               `json:"code,omitempty"`
+	Message   string            `json:"message,omitempty"`
+	RequestID string            `json:"request_id,omitempty"`
+	Data      *ListDocsV2Result `json:"data,omitempty"`
+}
+
+type SearchDocsByFilterResult struct {
+	CollectionName *string   `json:"collection_name,omitempty"`
+	DocList        []DocInfo `json:"doc_list"`
+	Count          *int      `json:"count,omitempty"`
+	TotalNum       *int      `json:"total_num,omitempty"`
+}
+
+type SearchDocsByFilterResponse struct {
+	Code      int                       `json:"code,omitempty"`
+	Message   string                    `json:"message,omitempty"`
+	RequestID string                    `json:"request_id,omitempty"`
+	Data      *SearchDocsByFilterResult `json:"data,omitempty"`
 }
 
 type AddDocResponseData struct {
