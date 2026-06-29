@@ -191,3 +191,8 @@ if err != nil {
 ## API Reference
 
 For a detailed API reference, please visit the [Go Reference](https://pkg.go.dev/github.com/volcengine/vikingdb-go-sdk).
+
+
+## Security and privacy
+This project takes security seriously.
+For vulnerability reporting and supported versions, see [SECURITY.md](SECURITY.md)

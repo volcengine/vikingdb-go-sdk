@@ -191,3 +191,9 @@ if err != nil {
 ## API 参考
 
 有关详细的 API 参考，请访问 [Go Reference](https://pkg.go.dev/github.com/volcengine/vikingdb-go-sdk)。
+
+
+## 安全与隐私
+
+本项目高度重视安全问题。
+如需报告安全漏洞或查看受支持版本，请参见 [SECURITY.md](SECURITY.md)。
