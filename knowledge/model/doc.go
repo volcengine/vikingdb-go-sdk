@@ -164,7 +164,6 @@ type AddDocResponseData struct {
 	ResourceID     *string    `json:"resource_id,omitempty"`
 	Project        *string    `json:"project,omitempty"`
 	DocID          *string    `json:"doc_id,omitempty"`
-	TaskID         *int64     `json:"task_id,omitempty"`
 	DedupInfo      *DedupInfo `json:"dedup_info,omitempty"`
 	MoreInfo       *string    `json:"more_info,omitempty"`
 }
