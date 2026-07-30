@@ -75,12 +75,13 @@ func runSearchKnowledge() (*kmodel.SearchKnowledgeResponse, error) {
 		ImageQuery:     nil,
 		PreProcessing:  nil,
 		PostProcessing: nil,
-		QueryParam: map[string]any{
-			"doc_filter": map[string]any{
+		QueryParam: &kmodel.QueryParam{
+			DocFilter: map[string]interface{}{
 				"op":    "must",
 				"field": "quarter",
-				"conds": []string{"Q3"},
+				"conds": []string{"Q1"},
 			},
+			IncludePathList: &[]string{"/google/2025/"},
 		},
 		Limit:       intPtr(10),
 		DenseWeight: floatPtr(0.5),

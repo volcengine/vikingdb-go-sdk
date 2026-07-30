@@ -3,10 +3,10 @@
 package model
 
 type ServiceChatRequest struct {
-	ServiceResourceID string                 `json:"service_resource_id"`
-	Messages          []ChatMessage          `json:"messages"`
-	QueryParam        map[string]interface{} `json:"query_param,omitempty"`
-	Stream            *bool                  `json:"stream,omitempty"`
+	ServiceResourceID string        `json:"service_resource_id"`
+	Messages          []ChatMessage `json:"messages"`
+	QueryParam        *QueryParam   `json:"query_param,omitempty"`
+	Stream            *bool         `json:"stream,omitempty"`
 }
 
 type ServiceChatRetrieveItemDocInfo struct {

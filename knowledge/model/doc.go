@@ -32,16 +32,18 @@ type LarkFile struct {
 }
 
 type AddDocRequest struct {
-	AddType     string        `json:"add_type"`
-	DocID       *string       `json:"doc_id,omitempty"`
-	DocName     *string       `json:"doc_name,omitempty"`
-	DocType     *string       `json:"doc_type,omitempty"`
-	Description *string       `json:"description,omitempty"`
-	TOSPath     *string       `json:"tos_path,omitempty"`
-	URL         *string       `json:"url,omitempty"`
-	LarkFile    *LarkFile     `json:"lark_file,omitempty"`
-	Meta        []MetaItem    `json:"meta,omitempty"`
-	Dedup       *DedupOptions `json:"dedup,omitempty"`
+	AddType            string        `json:"add_type"`
+	DocID              *string       `json:"doc_id,omitempty"`
+	DocName            *string       `json:"doc_name,omitempty"`
+	DocType            *string       `json:"doc_type,omitempty"`
+	Description        *string       `json:"description,omitempty"`
+	TOSPath            *string       `json:"tos_path,omitempty"`
+	URL                *string       `json:"url,omitempty"`
+	LarkFile           *LarkFile     `json:"lark_file,omitempty"`
+	Meta               []MetaItem    `json:"meta,omitempty"`
+	Dedup              *DedupOptions `json:"dedup,omitempty"`
+	PathPrefix         []string      `json:"path_prefix,omitempty"`
+	StrategyResourceID *string       `json:"strategy_resource_id,omitempty"`
 }
 
 type DedupOptions struct {

@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 package model
 
+type QueryParam struct {
+	DocFilter       interface{} `json:"doc_filter"`
+	IncludePathList *[]string   `json:"include_path_list"`
+}
+
 type SearchCollectionRequest struct {
 	Query             string                 `json:"query"`
 	Limit             int                    `json:"limit"`
@@ -31,7 +36,7 @@ type SearchKnowledgeRequest struct {
 	ImageQuery     *string                `json:"image_query,omitempty"`
 	PreProcessing  map[string]interface{} `json:"pre_processing,omitempty"`
 	PostProcessing map[string]interface{} `json:"post_processing,omitempty"`
-	QueryParam     map[string]interface{} `json:"query_param,omitempty"`
+	QueryParam     *QueryParam            `json:"query_param,omitempty"`
 	Limit          *int                   `json:"limit"`
 	DenseWeight    *float64               `json:"dense_weight"`
 }
