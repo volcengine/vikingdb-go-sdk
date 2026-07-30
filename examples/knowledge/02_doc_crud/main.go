@@ -46,7 +46,7 @@ func addDocV1ByURL(kc *knowledge.CollectionClient, docID, docName, docType, url 
 	return kc.AddDoc(context.Background(), req)
 }
 
-func addDocV2ByURL(kc *knowledge.CollectionClient, docID, docName, docType, url string, tagList []kmodel.MetaItem) (*kmodel.AddDocResponse, error) {
+func addDocV2ByURL(kc *knowledge.CollectionClient, docID, docName, docType, url string, tagList []kmodel.MetaItem) (*kmodel.AddDocV2Response, error) {
 	req := kmodel.AddDocV2Request{
 		DocID:        &docID,
 		DocName:      &docName,

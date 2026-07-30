@@ -58,7 +58,7 @@ func (c *CollectionClient) AddDoc(ctx context.Context, request kmodel.AddDocRequ
 }
 
 // AddDocV2 adds a document using v2 API.
-func (c *CollectionClient) AddDocV2(ctx context.Context, request kmodel.AddDocV2Request, opts ...RequestOption) (*kmodel.AddDocResponse, error) {
+func (c *CollectionClient) AddDocV2(ctx context.Context, request kmodel.AddDocV2Request, opts ...RequestOption) (*kmodel.AddDocV2Response, error) {
 	meta := c.metaPayload()
 	payload := map[string]interface{}{}
 	for k, v := range meta {
@@ -75,7 +75,7 @@ func (c *CollectionClient) AddDocV2(ctx context.Context, request kmodel.AddDocV2
 	for k, v := range reqMap {
 		payload[k] = v
 	}
-	var response kmodel.AddDocResponse
+	var response kmodel.AddDocV2Response
 	if err := c.transport.doRequest(ctx, http.MethodPost, "/api/knowledge/doc/v2/add", payload, &response, opts...); err != nil {
 		return nil, err
 	}

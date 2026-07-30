@@ -165,7 +165,6 @@ type AddDocResponseData struct {
 	Project        *string    `json:"project,omitempty"`
 	DocID          *string    `json:"doc_id,omitempty"`
 	DedupInfo      *DedupInfo `json:"dedup_info,omitempty"`
-	MoreInfo       *string    `json:"more_info,omitempty"`
 }
 
 type AddDocResponse struct {
@@ -173,4 +172,18 @@ type AddDocResponse struct {
 	Message   string              `json:"message,omitempty"`
 	RequestID string              `json:"request_id,omitempty"`
 	Data      *AddDocResponseData `json:"data,omitempty"`
+}
+
+type AddDocV2ResponseData struct {
+	CollectionName *string `json:"collection_name,omitempty"`
+	ResourceID     *string `json:"resource_id,omitempty"`
+	Project        *string `json:"project,omitempty"`
+	DocID          *string `json:"doc_id,omitempty"`
+}
+
+type AddDocV2Response struct {
+	Code      int                   `json:"code,omitempty"`
+	Message   string                `json:"message,omitempty"`
+	RequestID string                `json:"request_id,omitempty"`
+	Data      *AddDocV2ResponseData `json:"data,omitempty"`
 }

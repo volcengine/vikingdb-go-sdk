@@ -51,7 +51,7 @@ func initCollection(c *knowledge.Client) (*knowledge.CollectionClient, error) {
 	}), nil
 }
 
-func addDocV2(ctx context.Context, kc *knowledge.CollectionClient, docID, docName, uri string) (*kmodel.AddDocResponse, error) {
+func addDocV2(ctx context.Context, kc *knowledge.CollectionClient, docID, docName, uri string) (*kmodel.AddDocV2Response, error) {
 	req := kmodel.AddDocV2Request{
 		DocID:   &docID,
 		DocName: nil,
