@@ -47,6 +47,7 @@ type SearchBase struct {
 	ReturnDownloadURL    *bool `json:"return_download_url,omitempty"`
 	ReturnAnalyzedResult *bool `json:"return_analyzed_result,omitempty"`
 	ReturnDetailInfo     *bool `json:"return_detail_info,omitempty"`
+	IgnoreUnknownFields  *bool `json:"ignore_unknown_fields,omitempty"`
 }
 
 // SearchAdvance maps to Java's SearchAdvance DTO.
@@ -90,8 +91,13 @@ type SearchItemResult struct {
 	ANNScore float32     `json:"ann_score,omitempty"`
 	Score    float32     `json:"score,omitempty"`
 
-	OriginScore   *float32 `json:"origin_score,omitempty"`
-	AdditionScore *float32 `json:"addition_score,omitempty"`
+	OriginScore   *float32                    `json:"origin_score,omitempty"`
+	AdditionScore *float32                    `json:"addition_score,omitempty"`
+	Highlight     map[string]map[string][]int `json:"highlight,omitempty"`
+}
+
+type Highlight struct {
+	Enable *bool `json:"enable,omitempty"`
 }
 
 // TensorRerank defines tensor-based rerank settings.
@@ -161,13 +167,14 @@ type SearchByScalarRequest struct {
 // SearchByKeywordsRequest matches documents by keywords.
 type SearchByKeywordsRequest struct {
 	SearchBase
-	Mode          string   `json:"mode,omitempty"`
-	Keywords      []string `json:"keywords,omitempty"`
-	Query         string   `json:"query,omitempty"`
-	CaseSensitive bool     `json:"case_sensitive,omitempty"`
-	Fields        []string `json:"fields,omitempty"`
-	BM25K1        *float64 `json:"bm25_k1,omitempty"`
-	BM25B         *float64 `json:"bm25_b,omitempty"`
+	Mode          string     `json:"mode,omitempty"`
+	Keywords      []string   `json:"keywords,omitempty"`
+	Query         string     `json:"query,omitempty"`
+	Highlight     *Highlight `json:"highlight,omitempty"`
+	CaseSensitive bool       `json:"case_sensitive,omitempty"`
+	Fields        []string   `json:"fields,omitempty"`
+	BM25K1        *float64   `json:"bm25_k1,omitempty"`
+	BM25B         *float64   `json:"bm25_b,omitempty"`
 }
 
 // SearchByRandomRequest randomly samples documents.
@@ -178,10 +185,15 @@ type SearchByRandomRequest struct {
 // AggRequest performs aggregations on search results.
 type AggRequest struct {
 	RecallBase
-	Op    string      `json:"op"`
-	Field *string     `json:"field,omitempty"`
-	Cond  MapStr      `json:"cond,omitempty"`
-	Order ScalarOrder `json:"order,omitempty"`
+	Op      string  `json:"op"`
+	GroupBy *string `json:"group_by,omitempty"`
+	// Deprecated: use GroupBy instead.
+	Field       *string       `json:"field,omitempty"`
+	CalcValueOn *string       `json:"calc_value_on,omitempty"`
+	IDs         []interface{} `json:"ids,omitempty"`
+	Weights     []float64     `json:"weights,omitempty"`
+	Cond        MapStr        `json:"cond,omitempty"`
+	Order       ScalarOrder   `json:"order,omitempty"`
 }
 
 type AggResponse struct {
@@ -189,8 +201,19 @@ type AggResponse struct {
 	Result *AggResult `json:"result,omitempty"`
 }
 
+type VectorWeightedSumResult struct {
+	Vector     []float64     `json:"vector,omitempty"`
+	FoundCount int64         `json:"found_count,omitempty"`
+	FoundIDs   []interface{} `json:"found_ids,omitempty"`
+	WeightSum  float64       `json:"weight_sum,omitempty"`
+}
+
 type AggResult struct {
-	Agg   MapStr `json:"agg,omitempty"`
-	Op    string `json:"op,omitempty"`
-	Field string `json:"field,omitempty"`
+	Agg     MapStr `json:"agg,omitempty"`
+	Op      string `json:"op,omitempty"`
+	GroupBy string `json:"group_by,omitempty"`
+	// Deprecated: use GroupBy instead.
+	Field             string                   `json:"field,omitempty"`
+	CalcValueOn       string                   `json:"calc_value_on,omitempty"`
+	VectorWeightedSum *VectorWeightedSumResult `json:"vector_weighted_sum,omitempty"`
 }
