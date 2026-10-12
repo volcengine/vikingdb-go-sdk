@@ -68,11 +68,12 @@ type SearchResponse struct {
 }
 
 type SearchResult struct {
-	Data               []SearchItemResult `json:"data,omitempty"`
-	FilterMatchedCount int                `json:"filter_matched_count,omitempty"`
-	TotalReturnCount   int                `json:"total_return_count,omitempty"`
-	RealTextQuery      string             `json:"real_text_query,omitempty"`
-	TokenUsage         MapStr             `json:"token_usage,omitempty"`
+	Data               []SearchItemResult  `json:"data,omitempty"`
+	FilterMatchedCount int                 `json:"filter_matched_count,omitempty"`
+	TotalReturnCount   int                 `json:"total_return_count,omitempty"`
+	RealTextQuery      string              `json:"real_text_query,omitempty"`
+	EffectiveKeywords  map[string][]string `json:"effective_keywords,omitempty"`
+	TokenUsage         MapStr              `json:"token_usage,omitempty"`
 
 	Schema              MapStr  `json:"schema,omitempty"`
 	RerankError         *string `json:"rerank_error,omitempty"`
@@ -167,14 +168,15 @@ type SearchByScalarRequest struct {
 // SearchByKeywordsRequest matches documents by keywords.
 type SearchByKeywordsRequest struct {
 	SearchBase
-	Mode          string     `json:"mode,omitempty"`
-	Keywords      []string   `json:"keywords,omitempty"`
-	Query         string     `json:"query,omitempty"`
-	Highlight     *Highlight `json:"highlight,omitempty"`
-	CaseSensitive bool       `json:"case_sensitive,omitempty"`
-	Fields        []string   `json:"fields,omitempty"`
-	BM25K1        *float64   `json:"bm25_k1,omitempty"`
-	BM25B         *float64   `json:"bm25_b,omitempty"`
+	Mode          string             `json:"mode,omitempty"`
+	Keywords      []string           `json:"keywords,omitempty"`
+	Query         string             `json:"query,omitempty"`
+	Highlight     *Highlight         `json:"highlight,omitempty"`
+	CaseSensitive bool               `json:"case_sensitive,omitempty"`
+	Fields        []string           `json:"fields,omitempty"`
+	FieldsWeights map[string]float32 `json:"fields_weights,omitempty"`
+	BM25K1        *float64           `json:"bm25_k1,omitempty"`
+	BM25B         *float64           `json:"bm25_b,omitempty"`
 }
 
 // SearchByRandomRequest randomly samples documents.
