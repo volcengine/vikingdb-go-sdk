@@ -106,7 +106,10 @@ type PointInfo struct {
 }
 
 type ListPointsResult struct {
-	PointList []PointInfo `json:"point_list"`
+	CollectionName *string     `json:"collection_name,omitempty"`
+	Count          *int        `json:"count,omitempty"`
+	TotalNum       *int        `json:"total_num,omitempty"`
+	PointList      []PointInfo `json:"point_list"`
 }
 
 type ListPointsResponse struct {
@@ -114,6 +117,4 @@ type ListPointsResponse struct {
 	Message   string            `json:"message,omitempty"`
 	RequestID string            `json:"request_id,omitempty"`
 	Data      *ListPointsResult `json:"data,omitempty"`
-	Count     *int              `json:"count,omitempty"`
-	TotalNum  *int              `json:"total_num,omitempty"`
 }
